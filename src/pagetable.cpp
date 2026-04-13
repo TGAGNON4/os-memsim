@@ -1,4 +1,3 @@
-#include <cstdint>
 #include "pagetable.h"
 
 PageTable::PageTable(int page_size)
