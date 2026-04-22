@@ -41,8 +41,49 @@ int main(int argc, char **argv)
     std::getline(std::cin, command);
     while (command != "exit")
     {
+        std::string cmd = strtok(&command[0], " ");
         // Handle command
         // TODO: implement this!
+        if(cmd == "create"){
+            int text_size = std::stoi(strtok(NULL, " ")); // gets next argument
+            int data_size = std::stoi(strtok(NULL, " ")); // gets final argument
+            createProcess(text_size, data_size, mmu, page_table);
+        }
+        else if(cmd == "allocate"){
+            int pid = std::stoi(strtok(NULL, " "));
+            std::string var_name = strtok(NULL, " ");
+            std::string data_type = strtok(NULL, " ");
+            int num_elements = std::stoi(strtok(NULL, " "));
+            DataType type;
+            if(data_type == "char")
+                type = DataType::Char;
+            else if(data_type == "short")
+                type = DataType::Short;
+            else if(data_type == "int")
+                type = DataType::Int;
+            else if(data_type == "float")
+                type = DataType::Float;
+            else if(data_type == "long")
+                type = DataType::Long;
+            else if(data_type == "double")
+                type = DataType::Double;
+            allocateVariable(pid, var_name, type, num_elements, mmu, page_table);
+        }
+        else if(cmd == "set"){
+            
+        }
+        else if(cmd == "free"){
+
+        }
+        else if(cmd == "terminate"){
+
+        }
+        else if(cmd == "print"){
+
+        }
+        else{
+            std::cout << "error: command not recognized" << std::endl;
+        }
 
         // Get next command
         std::cout << "> ";
@@ -76,6 +117,7 @@ void printStartMessage(int page_size)
 
 void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table)
 {
+    std::cout << "Creating process with text size " << text_size << " bytes and data size " << data_size << " bytes..." << std::endl;
     // TODO: implement this!
     //   - create new process in the MMU
     //   - allocate new variables for the <TEXT>, <GLOBALS>, and <STACK>
