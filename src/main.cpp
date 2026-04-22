@@ -70,16 +70,35 @@ int main(int argc, char **argv)
             allocateVariable(pid, var_name, type, num_elements, mmu, page_table);
         }
         else if(cmd == "set"){
-            
+            int pid = std::stoi(strtok(NULL, " "));
+            std::string var_name = strtok(NULL, " ");
+            int offset = std::stoi(strtok(NULL, " "));
+            int *values = new int[1];
+            int i = 0;
+            while(true){
+                if(strtok(NULL, " ") == NULL)
+                    break;
+                else{
+                    values[i] = std::stoi(strtok(NULL, " "));
+                    i++;
+                }
+            }
+            setVariable(pid, var_name, offset, (void*)values, mmu, page_table, memory);
+            delete[] values;
         }
         else if(cmd == "free"){
-
+            int pid = std::stoi(strtok(NULL, " "));
+            std::string var_name = strtok(NULL, " ");
+            freeVariable(pid, var_name, mmu, page_table);
         }
         else if(cmd == "terminate"){
-
+            int pid = std::stoi(strtok(NULL, " "));
+            terminateProcess(pid, mmu, page_table);
         }
         else if(cmd == "print"){
+            std::string object = strtok(NULL, " ");
 
+            // some print statement logic were "object" can be "mmu", "page", "processes", or "<PID>:<var_name>"
         }
         else{
             std::cout << "error: command not recognized" << std::endl;
@@ -117,7 +136,6 @@ void printStartMessage(int page_size)
 
 void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table)
 {
-    std::cout << "Creating process with text size " << text_size << " bytes and data size " << data_size << " bytes..." << std::endl;
     // TODO: implement this!
     //   - create new process in the MMU
     //   - allocate new variables for the <TEXT>, <GLOBALS>, and <STACK>
