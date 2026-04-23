@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <vector>
 #include "mmu.h"
 #include "pagetable.h"
 
@@ -14,6 +15,7 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
 void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, uint8_t *memory);
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table);
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table);
+int page_size = 0;
 
 int main(int argc, char **argv)
 {
@@ -25,7 +27,7 @@ int main(int argc, char **argv)
     }
 
     // Print opening instuction message
-    int page_size = std::stoi(argv[1]);
+    page_size = std::stoi(argv[1]);
     printStartMessage(page_size);
 
     // Create physical 'memory' (raw array of bytes)
@@ -73,18 +75,13 @@ int main(int argc, char **argv)
             int pid = std::stoi(strtok(NULL, " "));
             std::string var_name = strtok(NULL, " ");
             int offset = std::stoi(strtok(NULL, " "));
-            int *values = new int[1];
+        
+            char *value;
             int i = 0;
-            while(true){
-                if(strtok(NULL, " ") == NULL)
-                    break;
-                else{
-                    values[i] = std::stoi(strtok(NULL, " "));
-                    i++;
-                }
+            while((value = strtok(NULL, " ")) != NULL){
+                setVariable(pid, var_name, offset + i, (void*)value, mmu, page_table, memory);
+                i++;
             }
-            setVariable(pid, var_name, offset, (void*)values, mmu, page_table, memory);
-            delete[] values;
         }
         else if(cmd == "free"){
             int pid = std::stoi(strtok(NULL, " "));
@@ -97,8 +94,27 @@ int main(int argc, char **argv)
         }
         else if(cmd == "print"){
             std::string object = strtok(NULL, " ");
+            /*  * print <object> (prints data)
+                * If <object> is "mmu", print the MMU memory table
+                * if <object> is "page", print the page table
+                * if <object> is "processes", print a list of PIDs for processes that are still running
+                * if <object> is a "<PID>:<var_name>", print the value of the variable for that process*/
 
-            // some print statement logic were "object" can be "mmu", "page", "processes", or "<PID>:<var_name>"
+            if(object == "mmu")
+                mmu->print();
+            else if (object == "page"){
+                page_table->print();
+            }
+            else if (object == "processes"){
+
+            }
+            else {
+                int pid = std::stoi(object.substr(0,object.find(':')));
+                std::string var_name = object.substr(object.find(':') + 1);
+
+                // PRINT VALUE OF var_name in process PID
+
+            }
         }
         else{
             std::cout << "error: command not recognized" << std::endl;
@@ -140,6 +156,15 @@ void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table
     //   - create new process in the MMU
     //   - allocate new variables for the <TEXT>, <GLOBALS>, and <STACK>
     //   - print pid
+    int pid = mmu->createProcess();
+    mmu->addVariableToProcess(pid, "<TEXT>", DataType::Char, text_size, 0);
+    mmu->addVariableToProcess(pid, "<GLOBALS>", DataType::Char, data_size, text_size);
+    mmu->addVariableToProcess(pid, "<STACK>", DataType::Char, 65536, text_size+data_size);
+    for (int i = 0; i < (int)((text_size + data_size + 65536 + page_size - 1) / page_size); i++){
+        page_table->addEntry(pid, i);
+    }
+    printf("%d\n", pid);
+
 }
 
 void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table)

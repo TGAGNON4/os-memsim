@@ -33,15 +33,14 @@ uint32_t Mmu::createProcess()
 
 void Mmu::addVariableToProcess(uint32_t pid, std::string var_name, DataType type, uint32_t size, uint32_t address)
 {
-    int i;
-    Process *proc = NULL;
     std::vector<Process*>::iterator it = std::find_if(_processes.begin(), _processes.end(), [pid](Process* p)
     { 
         return p != nullptr && p->pid == pid; 
     });
-
-    if (proc != NULL)
+    
+    if (it != _processes.end())
     {
+        Process *proc = *it;
         Variable *var = new Variable();
         var->name = var_name;
         var->type = type;
@@ -62,6 +61,14 @@ void Mmu::print()
         for (j = 0; j < _processes[i]->variables.size(); j++)
         {
             // TODO: print all variables (excluding those of type DataType::FreeSpace)
+            if(_processes[i]->variables[j]->type == DataType::FreeSpace)
+                continue;
+            
+            printf(" %-4d | %-13s |   0x%08X | %10d\n",
+                _processes[i]->pid,
+                _processes[i]->variables[j]->name.c_str(),
+                _processes[i]->variables[j]->virtual_address,
+                _processes[i]->variables[j]->size);
         }
     }
 }
