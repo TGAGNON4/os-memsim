@@ -33,6 +33,21 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     int frame = 0; 
     // Find free frame
     // TODO: implement this!
+    bool found = false;
+    while(!found){
+        found = true; // in case _table is empty or found a free frame
+        std::map<std::string, int>::iterator it;
+        for (it = _table.begin(); it != _table.end(); it++)
+        {
+            // if that frame is being used then skip
+            if(it->second == frame){
+                found = false;
+                frame++;
+                break; // restart scan with new frame value
+            }
+        }
+    }
+
     _table[entry] = frame;
 }
 
@@ -40,8 +55,8 @@ int PageTable::getPhysicalAddress(uint32_t pid, uint32_t virtual_address)
 {
     // Convert virtual address to page_number and page_offset
     // TODO: implement this!
-    int page_number = 0;
-    int page_offset = 0;
+    int page_number = virtual_address / _page_size;
+    int page_offset = virtual_address % _page_size;
 
     // Combination of pid and page number act as the key to look up frame number
     std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
@@ -51,6 +66,7 @@ int PageTable::getPhysicalAddress(uint32_t pid, uint32_t virtual_address)
     if (_table.count(entry) > 0)
     {
         // TODO: implement this!
+        address = _table[entry] * _page_size + page_offset;
     }
 
     return address;
@@ -68,5 +84,17 @@ void PageTable::print()
     for (i = 0; i < keys.size(); i++)
     {
         // TODO: print all pages
+        int delim = keys[i].find('|');
+        uint32_t pid = std::stoi(keys[i].substr(0, delim));
+        uint32_t page_n = std::stoi(keys[i].substr(delim + 1));
+        uint32_t frame_n = _table[keys[i]];
+        printf(" %4d | %11d | %12d\n",
+            pid,
+            page_n,
+            frame_n);
     }
+}
+
+uint32_t PageTable::getPageSize(){
+    return _page_size;
 }

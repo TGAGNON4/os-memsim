@@ -64,11 +64,33 @@ void Mmu::print()
             if(_processes[i]->variables[j]->type == DataType::FreeSpace)
                 continue;
             
-            printf(" %-4d | %-13s |   0x%08X | %10d\n",
+            printf(" %4d | %-13s |   0x%08X | %10d\n",
                 _processes[i]->pid,
                 _processes[i]->variables[j]->name.c_str(),
                 _processes[i]->variables[j]->virtual_address,
                 _processes[i]->variables[j]->size);
         }
     }
+}
+
+
+uint32_t Mmu::getAvailableAddress(uint32_t pid){
+    std::vector<Process*>::iterator it = std::find_if(_processes.begin(), _processes.end(), [pid](Process* p)
+    { 
+        return p != nullptr && p->pid == pid; 
+    });
+
+    // find what the next available address it
+    uint32_t address = 0;
+    if (it != _processes.end()) {
+        std::vector<Variable*>::iterator vit;
+        for (vit = (*it)->variables.begin(); vit != (*it)->variables.end(); vit++) {
+            if((*vit)->type == DataType::FreeSpace)
+                continue; // skip free spaces
+            uint32_t end = (*vit)->virtual_address + (*vit)->size;
+            if (end > address) 
+                address = end;
+        }
+    }
+    return address;
 }
