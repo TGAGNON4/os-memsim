@@ -60,7 +60,6 @@ void Mmu::print()
     {
         for (j = 0; j < _processes[i]->variables.size(); j++)
         {
-            // TODO: print all variables (excluding those of type DataType::FreeSpace)
             if(_processes[i]->variables[j]->type == DataType::FreeSpace)
                 continue;
             
@@ -93,4 +92,29 @@ uint32_t Mmu::getAvailableAddress(uint32_t pid){
         }
     }
     return address;
+}
+
+// have to implement here as it has access to _processes
+bool Mmu::pidExists(uint32_t pid){
+    std::vector<Process*>::iterator it = std::find_if(_processes.begin(), _processes.end(), [pid](Process* p)
+    { 
+        return p != nullptr && p->pid == pid; 
+    });
+    return it != _processes.end(); // if iterator is at the end then PID does not exist
+}
+
+// always call this after pidExists()
+bool Mmu::variableExists(uint32_t pid, std::string var_name){
+    std::vector<Process*>::iterator it = std::find_if(_processes.begin(), _processes.end(), [pid](Process* p)
+    { 
+        return p != nullptr && p->pid == pid; 
+    });
+    
+    // assuming iterator found pid since pidExists() will be called first
+    std::vector<Variable*>::iterator vit;
+    for (vit = (*it)->variables.begin(); vit != (*it)->variables.end(); vit++) {
+        if((*vit)->name == var_name)
+            return true;
+    }
+    return false;
 }

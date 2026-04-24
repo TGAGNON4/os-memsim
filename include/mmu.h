@@ -33,6 +33,8 @@ public:
     void addVariableToProcess(uint32_t pid, std::string var_name, DataType type, uint32_t size, uint32_t address);
     void print();
     uint32_t getAvailableAddress(uint32_t pid);
+    bool pidExists(uint32_t pid);
+    bool variableExists(uint32_t pid, std::string var_name); // always call this after pidExists()
 };
 
 #endif // __MMU_H_

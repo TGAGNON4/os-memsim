@@ -44,7 +44,6 @@ int main(int argc, char **argv)
     {
         std::string cmd = strtok(&command[0], " ");
         // Handle command
-        // TODO: implement this!
         if(cmd == "create"){
             int text_size = std::stoi(strtok(NULL, " ")); // gets next argument
             int data_size = std::stoi(strtok(NULL, " ")); // gets final argument
@@ -169,6 +168,17 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
     //   - if no hole is large enough, allocate new page(s)
     //   - insert variable into MMU
     //   - print virtual memory address
+
+    // check if the PID does not exist
+    if(!mmu->pidExists(pid)){
+        printf("error: process not found\n");
+        return;
+    }
+    if (mmu->variableExists(pid, var_name)) {
+        printf("error: variable already exists\n");
+        return;
+    }
+
     uint32_t size = 0;
     if(type == DataType::Char)
         size = 1 * num_elements;
@@ -179,8 +189,13 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
     else if(type == DataType::Long || type == DataType::Double)
         size = 8 * num_elements;
 
+
     // find next virtual address
     uint32_t address = mmu->getAvailableAddress(pid);
+    if (address + size > PHYSICAL_MEMORY) {
+        printf("error: not enough memory\n");
+        return;
+    }
 
     // allocate new pages if no space
     uint32_t page_size = page_table->getPageSize();
@@ -205,6 +220,15 @@ void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *valu
     //   - insert `value` into `memory` at physical address
     //   * note: this function only handles a single element (i.e. you'll need to call this within a loop when setting
     //           multiple elements of an array)
+    if (!mmu->pidExists(pid)){
+        printf("error: process not found\n");
+        return;
+    }
+    if (!mmu->variableExists(pid, var_name)){
+        printf("error: variable not found\n");
+        return;
+    }
+
 }
 
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table)
@@ -212,6 +236,14 @@ void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_
     // TODO: implement this!
     //   - remove entry from MMU
     //   - free page if this variable was the only one on a given page
+    if (!mmu->pidExists(pid)){
+        printf("error: process not found\n");
+        return;
+    }
+    if (!mmu->variableExists(pid, var_name)){
+        printf("error: variable not found\n");
+        return;
+    }
 }
 
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table)
@@ -219,4 +251,8 @@ void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table)
     // TODO: implement this!
     //   - remove process from MMU
     //   - free all pages associated with given process
+    if (!mmu->pidExists(pid)){
+        printf("error: process not found\n");
+        return;
+    }
 }
