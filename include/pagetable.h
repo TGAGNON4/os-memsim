@@ -34,7 +34,11 @@ public:
     ~PageTable();
 
     void addEntry(uint32_t pid, int page_number);
+    bool hasEntry(uint32_t pid, int page_number);
+    void removeEntry(uint32_t pid, int page_number);
+    void removeEntries(uint32_t pid);
     int getPhysicalAddress(uint32_t pid, uint32_t virtual_address);
+    uint32_t getEntryCount();
     void print();
     uint32_t getPageSize();
 };

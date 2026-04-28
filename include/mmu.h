@@ -25,14 +25,24 @@ private:
     uint32_t _max_size;
     std::vector<Process*> _processes;
 
+    Process* findProcess(uint32_t pid);
+    void sortVariables(Process *proc);
+    void coalesceFreeSpaces(Process *proc);
+
 public:
     Mmu(int memory_size);
     ~Mmu();
 
     uint32_t createProcess();
     void addVariableToProcess(uint32_t pid, std::string var_name, DataType type, uint32_t size, uint32_t address);
+    Variable* getVariable(uint32_t pid, std::string var_name);
+    std::vector<Variable*> getVariables(uint32_t pid);
+    std::vector<uint32_t> getProcessIds();
+    void removeVariableFromProcess(uint32_t pid, std::string var_name);
+    void removeProcess(uint32_t pid);
+    bool pageHasAllocatedVariable(uint32_t pid, uint32_t page_number, uint32_t page_size);
     void print();
-    uint32_t getAvailableAddress(uint32_t pid);
+    uint32_t getAvailableAddress(uint32_t pid, uint32_t size);
     bool pidExists(uint32_t pid);
     bool variableExists(uint32_t pid, std::string var_name); // always call this after pidExists()
 };
