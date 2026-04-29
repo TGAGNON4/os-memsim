@@ -11,7 +11,7 @@ fi
 
 # Run program, strip '> ' prompts and welcome message, filter blank lines
 actual=$($BINARY 8192 < $INPUT 2>/dev/null \
-    | sed 's/> //g' \
+    | sed 's/^\(> \)*//' \
     | grep -v "^Welcome" \
     | grep -v "^Commands" \
     | grep -v "^  \*" \
